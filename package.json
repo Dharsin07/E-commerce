@@ -1,0 +1,16 @@
+{
+  "name": "luxi",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev:react-app": "cd react-app && npm run dev",
+    "start:react-app": "cd react-app && npm start"
+  },
+  "dependencies": {
+    "gh-pages": "^6.3.0",
+    "vite": "^7.1.9"
+  }
+}

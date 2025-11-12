@@ -1,0 +1,68 @@
+/* Dark mode theme variables */
+:root {
+  /* Light theme (default) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6c757d;
+  --border-color: #e9ecef;
+  --input-bg: #ffffff;
+  --error-bg: #ffd7d7;
+  --error-text: #dc3545;
+  --success-bg: #d4edda;
+  --success-text: #28a745;
+  --warning-bg: #fff3cd;
+  --warning-text: #856404;
+
+  /* Shared variables */
+  --primary-color: #d4af37;
+  --primary-rgb: 212, 175, 55;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark theme */
+:root[class~="dark-mode"] {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border-color: #2d2d2d;
+  --input-bg: #2d2d2d;
+  --error-bg: #420c0c;
+  --error-text: #ff8585;
+  --success-bg: #0c3818;
+  --success-text: #4caf50;
+  --warning-bg: #3d2c05;
+  --warning-text: #ffd54f;
+}
+
+/* Smooth theme transition */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* CSS variables for common components */
+.card,
+.modal-content,
+.dropdown-menu,
+.search-suggestions {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+input,
+select,
+textarea {
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Improved focus styles for dark mode */
+:root[class~="dark-mode"] .btn:focus-visible,
+:root[class~="dark-mode"] .nav-links a:focus-visible,
+:root[class~="dark-mode"] .action-btn:focus-visible {
+  outline-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+}
