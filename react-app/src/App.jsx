@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, Link } from 'react-router-dom';
+import { Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom';
 import './App.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -41,12 +41,17 @@ import Wishlist from './components/Wishlist';
 import Checkout from './components/Checkout';
 import AdminPanel from './components/AdminPanel';
 import ScrollToTop from './components/ScrollToTop';
+import Loading from './components/Loading';
 
 function App() {
   // notifications are now shown using react-toastify (toast.*).
   const navigate = useNavigate();
+  const location = useLocation();
   const { isDarkMode } = useTheme();
   const { user, isAuthenticated } = useAuth();
+
+  // Loading state for full-page animation
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fly animation items
   const [flyItems, setFlyItems] = React.useState([]);
@@ -157,6 +162,21 @@ function App() {
       document.body.style.overflow = '';
     };
   }, [isCartOpen, isWishlistOpen, isCheckoutOpen, isAdminOpen, modalProduct]);
+
+  // Simple loading delay on route change
+  useEffect(() => {
+    // Add 1-second delay on every route navigation
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    // Scroll to top on route change
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname]);
 
   // Initialize scroll animations
   const initializeAnimations = () => {
@@ -461,6 +481,7 @@ function App() {
 
   return (
     <div className="App">
+        {isLoading && <Loading />}
         <ToastContainer
           position="top-right"
           autoClose={2300}

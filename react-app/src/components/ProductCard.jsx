@@ -37,6 +37,7 @@ const ProductCard = ({ product, isInWishlist, onAddToCart, onToggleWishlist, onO
           alt={product.name}
           className="product-img"
           loading="lazy"
+          decoding="async"
         />
 
         {discountPercent > 0 && (

@@ -58,10 +58,10 @@ const Header = ({
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast.success('Logged out successfully');
-    navigate('/');
+    navigate('/login');
   };
 
   // Dropdown state for Profile and Shopping

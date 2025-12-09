@@ -25,16 +25,17 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    try {
+      const result = await signup(formData.name, formData.email, formData.password, formData.confirmPassword);
 
-    const result = signup(formData.name, formData.email, formData.password, formData.confirmPassword);
-
-    setIsLoading(false);
-
-    if (result.success) {
-      toast.success('Account created successfully!');
-      navigate('/');
-    } else {
-      toast.error(result.error);
+      if (result.success) {
+        toast.success('Account created successfully! Please check your email to confirm your account if required.');
+        navigate('/');
+      } else {
+        toast.error(result.error || 'Unable to create account');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 

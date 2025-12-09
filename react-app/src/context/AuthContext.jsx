@@ -1,4 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { auth } from '../lib/firebase';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from 'firebase/auth';
+import { supabase, upsertProfile, getProfile } from '../lib/supabase';
 
 const AuthContext = createContext();
 
@@ -14,81 +25,70 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    // Initialize default users if none exist
-    const existingUsers = JSON.parse(localStorage.getItem('luxe-users') || '[]');
-    if (existingUsers.length === 0) {
-      const defaultUsers = [
-        {
-          id: '1',
-          name: 'Admin User',
-          email: 'admin@luxe.com',
-          password: 'admin123',
-          role: 'admin'
-        },
-        {
-          id: '2',
-          name: 'Regular User',
-          email: 'user@luxe.com',
-          password: 'user123',
-          role: 'user'
-        }
-      ];
-      localStorage.setItem('luxe-users', JSON.stringify(defaultUsers));
-    }
-
-    const storedUser = localStorage.getItem('luxe-user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        localStorage.removeItem('luxe-user');
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  // Save user to localStorage whenever user changes
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('luxe-user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('luxe-user');
-    }
-  }, [user]);
-
-  const login = (email, password) => {
-    // Simple authentication logic - in a real app, this would be an API call
-    const users = JSON.parse(localStorage.getItem('luxe-users') || '[]');
-
-    const foundUser = users.find(u => u.email === email && u.password === password);
-
-    if (foundUser) {
-      const userData = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-        role: foundUser.role
-      };
-      setUser(userData);
-      return { success: true };
-    }
-
-    return { success: false, error: 'Invalid email or password' };
+  // Load profile from Supabase and merge with Firebase user
+  const loadUserWithProfile = async (firebaseUser) => {
+    const profile = await getProfile(firebaseUser.uid);
+    const role = profile?.role || (firebaseUser.email === 'admin@luxe.com' ? 'admin' : 'user');
+    const name = profile?.name || firebaseUser.displayName || '';
+    setUser({
+      id: firebaseUser.uid,
+      email: firebaseUser.email,
+      name,
+      role,
+    });
   };
 
-  const signup = (name, email, password, confirmPassword) => {
-    // Validation
-    if (!name.trim()) {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        await loadUserWithProfile(firebaseUser);
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      const cleanedEmail = email.trim().toLowerCase();
+      const cred = await signInWithEmailAndPassword(auth, cleanedEmail, password);
+      const firebaseUser = cred.user;
+      await loadUserWithProfile(firebaseUser);
+      return { success: true, user: firebaseUser };
+    } catch (error) {
+      return { success: false, error: error.message || 'Unable to sign in' };
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const cred = await signInWithPopup(auth, provider);
+      const firebaseUser = cred.user;
+      await loadUserWithProfile(firebaseUser);
+      return { success: true, user: firebaseUser };
+    } catch (error) {
+      return { success: false, error: error.message || 'Unable to sign in with Google' };
+    }
+  };
+
+  const signup = async (name, email, password, confirmPassword) => {
+    console.log('AuthContext signup:', { name, email, password: '***', confirmPassword });
+    const cleanedName = name.trim();
+    const cleanedEmail = email.trim().toLowerCase();
+
+    if (!cleanedName) {
       return { success: false, error: 'Name is required' };
     }
 
-    if (!email.trim()) {
+    if (!cleanedEmail) {
       return { success: false, error: 'Email is required' };
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanedEmail)) {
       return { success: false, error: 'Please enter a valid email address' };
     }
 
@@ -100,40 +100,45 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: 'Passwords do not match' };
     }
 
-    // Check if user already exists
-    const users = JSON.parse(localStorage.getItem('luxe-users') || '[]');
-    const existingUser = users.find(u => u.email === email);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, cleanedEmail, password);
+      const firebaseUser = cred.user;
 
-    if (existingUser) {
-      return { success: false, error: 'An account with this email already exists' };
+      // Set displayName in Firebase
+      if (cleanedName) {
+        await updateProfile(firebaseUser, { displayName: cleanedName });
+      }
+
+      // Store profile in Supabase
+      const role = firebaseUser.email === 'admin@luxe.com' ? 'admin' : 'user';
+      await upsertProfile(firebaseUser.uid, firebaseUser.email, cleanedName, role);
+
+      setUser({
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: cleanedName,
+        role,
+      });
+
+      return { success: true, user: firebaseUser };
+    } catch (error) {
+      return { success: false, error: error.message || 'Unable to create account' };
     }
-
-    // Create new user
-    const newUser = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      email: email.trim(),
-      password,
-      role: 'user' // Default role is 'user', admin can be set manually in localStorage
-    };
-
-    users.push(newUser);
-    localStorage.setItem('luxe-users', JSON.stringify(users));
-
-    // Auto-login after signup
-    const userData = {
-      id: newUser.id,
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role
-    };
-    setUser(userData);
-
-    return { success: true };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
+  };
+
+  const refreshSession = async () => {
+    const firebaseUser = auth.currentUser;
+    if (firebaseUser) {
+      await loadUserWithProfile(firebaseUser);
+      return true;
+    }
+    setUser(null);
+    return false;
   };
 
   const isAdmin = () => {
@@ -146,12 +151,14 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
-    isLoading,
+    loading: isLoading,
     login,
     signup,
     logout,
+    refreshSession,
+    loginWithGoogle,
     isAdmin,
-    isAuthenticated
+    isAuthenticated,
   };
 
   return (

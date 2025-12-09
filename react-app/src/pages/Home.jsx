@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Hero from '../components/Hero';
 import Collections from '../components/Collections';
 import Products from '../components/Products';
@@ -18,11 +18,17 @@ const Home = ({
   onFly
 }) => {
   // Clear filters when navigating to Home to ensure all products are displayed
+  // Use ref to prevent infinite re-renders
+  const hasClearedFilters = useRef(false);
+
   useEffect(() => {
-    onFilterChange('category', '');
-    onFilterChange('price', '');
-    onFilterChange('sort', 'featured');
-  }, [onFilterChange]);
+    if (!hasClearedFilters.current) {
+      onFilterChange('category', '');
+      onFilterChange('price', '');
+      onFilterChange('sort', 'featured');
+      hasClearedFilters.current = true;
+    }
+  }, []); // Empty dependency array - only run once on mount
   return (
     <main>
       <Hero />

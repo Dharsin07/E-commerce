@@ -23,14 +23,8 @@ const Products = ({
   // Keep visibleProducts derived from props so changes to products (navigation) reflect immediately
   const visibleProducts = useMemo(() => products.slice(0, visibleCount), [products, visibleCount]);
 
-  // Simulate loading state for demonstration
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (products.length > 0) {
-      setIsLoading(false);
-    }
-  }, [products]);
+  // Loading state based on whether products array has content
+  const isLoading = loading || products.length === 0;
   return (
     <section className="section" id="products">
       <div className="container">

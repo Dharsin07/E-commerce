@@ -364,6 +364,9 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
                           <option value="dining">Dining</option>
                           <option value="bedroom">Bedroom</option>
                           <option value="office">Office</option>
+                          <option value="entryway">Entryway</option>
+                          <option value="decor">Decor</option>
+                          <option value="lighting">Lighting</option>
                         </select>
                       </div>
                       <div className="form-group">
@@ -410,6 +413,9 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
                           <option value="dining">Dining</option>
                           <option value="bedroom">Bedroom</option>
                           <option value="office">Office</option>
+                          <option value="entryway">Entryway</option>
+                          <option value="decor">Decor</option>
+                          <option value="lighting">Lighting</option>
                         </select>
                       </div>
                       <div className="form-group">

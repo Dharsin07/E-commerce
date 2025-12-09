@@ -10,7 +10,7 @@ const Login = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -23,19 +23,35 @@ const Login = () => {
     }));
   };
 
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await loginWithGoogle();
+      if (result.success) {
+        toast.success('Signed in with Google');
+        navigate(from, { replace: true });
+      } else {
+        toast.error(result.error || 'Unable to sign in with Google');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    try {
+      const result = await login(formData.email, formData.password);
 
-    const result = login(formData.email, formData.password);
-
-    setIsLoading(false);
-
-    if (result.success) {
-      toast.success('Welcome back!');
-      navigate(from, { replace: true });
-    } else {
-      toast.error(result.error);
+      if (result.success) {
+        toast.success('Welcome back!');
+        navigate(from, { replace: true });
+      } else {
+        toast.error(result.error || 'Unable to sign in');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,6 +108,15 @@ const Login = () => {
                 disabled={isLoading}
               >
                 {isLoading ? 'Signing In...' : 'Sign In'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary auth-submit-btn"
+                disabled={isLoading}
+                onClick={handleGoogleLogin}
+                style={{ marginTop: '0.75rem' }}
+              >
+                Continue with Google
               </button>
             </form>
 
