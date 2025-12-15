@@ -16,7 +16,7 @@ const Header = ({
   onSearchChange = () => {},
   searchSuggestions = []
 }) => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const inputRef = useRef(null);
 
@@ -143,7 +143,7 @@ const Header = ({
                         src={p.images[0]} 
                         alt={p.name}
                         onError={(e) => {
-                          e.target.src = '/placeholder.jpg';
+                          e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
                           e.target.onerror = null;
                         }} 
                       />
@@ -240,7 +240,7 @@ const Header = ({
           )}
 
           {/* Admin button - only show if authenticated and user is admin */}
-          {isAuthenticated() && user?.role === 'admin' && (
+          {isAuthenticated() && isAdmin() && (
             <button
               className="nav-icon admin-icon"
               onClick={onAdminToggle}

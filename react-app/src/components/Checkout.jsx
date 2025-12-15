@@ -3,8 +3,8 @@ import { formatPrice } from '../utils/helpers';
 import { toast } from 'react-toastify';
 
 const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
-  // use react-toastify for notifications
   const [step, setStep] = useState(1);
+  const [paymentMethod, setPaymentMethod] = useState('gpay');
   const [formData, setFormData] = useState({
     // Shipping Info
     firstName: '',
@@ -17,6 +17,7 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
     zipCode: '',
     country: '',
     // Payment Info
+    upiId: '',
     cardName: '',
     cardNumber: '',
     expiryDate: '',
@@ -33,15 +34,38 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
     }));
   };
 
+  const initiateGPayPayment = () => {
+    if (!formData.upiId) {
+      toast.error('Please enter UPI ID');
+      return;
+    }
+
+    const upiUrl = `upi://pay?pa=${formData.upiId}&pn=LuxeFurniture&am=${cartTotal}&cu=INR&tn=Order_${Date.now()}`;
+    
+    // Open GPay/PhonePe app
+    window.location.href = upiUrl;
+    
+    // Simulate payment completion after delay
+    setTimeout(() => {
+      toast.success('Payment completed successfully!');
+      onCompleteOrder(formData);
+      onClose();
+    }, 3000);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Complete order - success toast is now handled in App.jsx
-      onCompleteOrder(formData);
-      onClose();
+      if (paymentMethod === 'gpay') {
+        initiateGPayPayment();
+      } else {
+        // Complete order for other payment methods
+        onCompleteOrder(formData);
+        onClose();
+      }
     }
   };
 
@@ -242,6 +266,103 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
                       Billing address same as shipping
                     </label>
                   </div>
+                  
+                  {/* GPay Payment Section */}
+                  <div className="form-group">
+                    <label>Payment Method *</label>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="gpay"
+                          checked={paymentMethod === 'gpay'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        GPay/UPI
+                      </label>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="card"
+                          checked={paymentMethod === 'card'}
+                          onChange={(e) => setPaymentMethod(e.target.value)}
+                        />
+                        Credit Card
+                      </label>
+                    </div>
+                  </div>
+
+                  {paymentMethod === 'gpay' && (
+                    <div className="form-group">
+                      <label>UPI ID *</label>
+                      <input
+                        type="text"
+                        name="upiId"
+                        value={formData.upiId}
+                        onChange={handleInputChange}
+                        placeholder="yourupi@paytm"
+                        required={paymentMethod === 'gpay'}
+                      />
+                      <small style={{ color: 'var(--text-gray)', marginTop: '0.5rem', display: 'block' }}>
+                        Enter your UPI ID for GPay/PhonePe/ Paytm payment
+                      </small>
+                    </div>
+                  )}
+
+                  {paymentMethod === 'card' && (
+                    <>
+                      <div className="form-group">
+                        <label>Cardholder Name *</label>
+                        <input
+                          type="text"
+                          name="cardName"
+                          value={formData.cardName}
+                          onChange={handleInputChange}
+                          required={paymentMethod === 'card'}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Card Number *</label>
+                        <input
+                          type="text"
+                          name="cardNumber"
+                          value={formData.cardNumber}
+                          onChange={handleInputChange}
+                          placeholder="1234 5678 9012 3456"
+                          maxLength="16"
+                          required={paymentMethod === 'card'}
+                        />
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Expiry Date *</label>
+                          <input
+                            type="text"
+                            name="expiryDate"
+                            value={formData.expiryDate}
+                            onChange={handleInputChange}
+                            placeholder="MM/YY"
+                            maxLength="5"
+                            required={paymentMethod === 'card'}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>CVV *</label>
+                          <input
+                            type="text"
+                            name="cvv"
+                            value={formData.cvv}
+                            onChange={handleInputChange}
+                            placeholder="123"
+                            maxLength="3"
+                            required={paymentMethod === 'card'}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

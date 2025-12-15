@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { formatPrice } from '../utils/helpers';
+import { getAllProfiles, createProfile, updateProfile, deleteProfile } from '../lib/supabase';
 
 const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateProduct, onDeleteProduct }) => {
   // use react-toastify for notifications
@@ -35,22 +36,31 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
     password: '',
     role: 'user'
   });
-  const [users, setUsers] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('luxe-users') || '[]'); } catch (e) { return []; }
-  });
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
+  // Load users from Supabase on mount and when tab switches to users
+  useEffect(() => {
+    if (activeTab === 'users' || activeTab === 'addUser' || activeTab === 'editUser') {
+      setUsersLoading(true);
+      getAllProfiles()
+        .then(setUsers)
+        .catch(err => {
+          console.error('Failed to load users:', err);
+          toast.error('Failed to load users');
+        })
+        .finally(() => setUsersLoading(false));
+    }
+  }, [activeTab]);
 
   const handleAddProduct = (e) => {
     e.preventDefault();
     const product = {
       ...newProduct,
-      id: Date.now(),
       price: parseFloat(newProduct.price),
-      rating: 0,
-      reviews: 0,
       featured: false
     };
-  onAddProduct(product);
-  toast.success('Product added successfully!');
+    onAddProduct(product);
     setNewProduct({
       name: '', category: 'living-room', price: '',
       description: '', images: [''], inStock: true
@@ -73,7 +83,6 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
   const handleUpdateProduct = (e) => {
     e.preventDefault();
     const updatedProduct = {
-      ...editingProduct,
       name: editProduct.name,
       category: editProduct.category,
       price: parseFloat(editProduct.price),
@@ -82,7 +91,6 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
       inStock: editProduct.inStock
     };
     onUpdateProduct(editingProduct.id, updatedProduct);
-    toast.success('Product updated successfully!');
     setEditingProduct(null);
     setEditProduct({
       name: '',
@@ -108,30 +116,25 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
     setActiveTab('products');
   };
 
-  const handleAddUser = (e) => {
+  const handleAddUser = async (e) => {
     e.preventDefault();
-    // Check if user already exists
+    // Check if user already exists locally
     const existingUser = users.find(u => u.email === newUser.email);
     if (existingUser) {
       toast.error('User with this email already exists');
       return;
     }
 
-    const user = {
-      ...newUser,
-      id: Date.now().toString()
-    };
-
-    const updatedUsers = [...users, user];
-    setUsers(updatedUsers);
-    localStorage.setItem('luxe-users', JSON.stringify(updatedUsers));
-    toast.success('User added successfully!');
-    setNewUser({
-      name: '',
-      email: '',
-      password: '',
-      role: 'user'
-    });
+    try {
+      await createProfile(newUser.email, newUser.name, newUser.role);
+      const created = { ...newUser, id: `admin-${Date.now()}` };
+      setUsers(prev => [...prev, created]);
+      toast.success('User added successfully!');
+      setNewUser({ name: '', email: '', password: '', role: 'user' });
+    } catch (err) {
+      console.error('Failed to add user:', err);
+      toast.error('Failed to add user');
+    }
   };
 
   const handleEditUser = (user) => {
@@ -145,37 +148,42 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
     setActiveTab('editUser');
   };
 
-  const handleUpdateUser = (e) => {
+  const handleUpdateUser = async (e) => {
     e.preventDefault();
-    // Check if email already exists for another user
+    // Check if email already exists for another user locally
     const existingUser = users.find(u => u.email === editUser.email && u.id !== editingUser.id);
     if (existingUser) {
       toast.error('Email already exists for another user');
       return;
     }
 
-    const updatedUsers = users.map(u =>
-      u.id === editingUser.id ? { ...u, ...editUser } : u
-    );
-    setUsers(updatedUsers);
-    localStorage.setItem('luxe-users', JSON.stringify(updatedUsers));
-    toast.success('User updated successfully!');
-    setEditingUser(null);
-    setEditUser({
-      name: '',
-      email: '',
-      password: '',
-      role: 'user'
-    });
-    setActiveTab('users');
+    try {
+      const updated = await updateProfile(editingUser.id, {
+        name: editUser.name,
+        email: editUser.email,
+        role: editUser.role
+      });
+      setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...updated } : u));
+      toast.success('User updated successfully!');
+      setEditingUser(null);
+      setEditUser({ name: '', email: '', password: '', role: 'user' });
+      setActiveTab('users');
+    } catch (err) {
+      console.error('Failed to update user:', err);
+      toast.error('Failed to update user');
+    }
   };
 
-  const handleDeleteUser = (userId) => {
+  const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      const updatedUsers = users.filter(u => u.id !== userId);
-      setUsers(updatedUsers);
-      localStorage.setItem('luxe-users', JSON.stringify(updatedUsers));
-      toast.success('User deleted successfully!');
+      try {
+        await deleteProfile(userId);
+        setUsers(prev => prev.filter(u => u.id !== userId));
+        toast.success('User deleted successfully!');
+      } catch (err) {
+        console.error('Failed to delete user:', err);
+        toast.error('Failed to delete user');
+      }
     }
   };
 
@@ -259,7 +267,7 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
                             <td>{product.inStock ? 'In Stock' : 'Out'}</td>
                             <td className="actions-cell">
                               <button className="btn-sm btn-edit" onClick={() => handleEditProduct(product)}>Edit</button>
-                              <button className="btn-sm btn-danger" onClick={() => { onDeleteProduct(product.id); toast.info('Deleted'); }}>Delete</button>
+                              <button className="btn-sm btn-danger" onClick={() => { onDeleteProduct(product.id); }}>Delete</button>
                             </td>
                           </tr>
                         ))}
@@ -320,31 +328,35 @@ const AdminPanel = ({ isOpen, onClose, products, orders, onAddProduct, onUpdateP
                   </div>
 
                   <div className="card table-card">
-                    <table className="admin-table">
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Role</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {users.map(user => (
-                          <tr key={user.id}>
-                            <td>{user.id}</td>
-                            <td>{user.name}</td>
-                            <td>{user.email}</td>
-                            <td><span className={`role-badge ${user.role}`}>{user.role}</span></td>
-                            <td className="actions-cell">
-                              <button className="btn-sm btn-edit" onClick={() => handleEditUser(user)}>Edit</button>
-                              <button className="btn-sm btn-danger" onClick={() => handleDeleteUser(user.id)}>Delete</button>
-                            </td>
+                    {usersLoading ? (
+                      <p>Loading users...</p>
+                    ) : (
+                      <table className="admin-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {users.map(user => (
+                            <tr key={user.id}>
+                              <td>{user.id}</td>
+                              <td>{user.name}</td>
+                              <td>{user.email}</td>
+                              <td><span className={`role-badge ${user.role}`}>{user.role}</span></td>
+                              <td className="actions-cell">
+                                <button className="btn-sm btn-edit" onClick={() => handleEditUser(user)}>Edit</button>
+                                <button className="btn-sm btn-danger" onClick={() => handleDeleteUser(user.id)}>Delete</button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
               )}

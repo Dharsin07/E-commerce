@@ -24,19 +24,69 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email,
-          name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-          role: firebaseUser.email === 'admin@luxe.com' ? 'admin' : 'user',
+  // Simple fallback for when backend is not available
+  const loadUserWithFallback = async (firebaseUser) => {
+    try {
+      // Try to use backend API if available
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+      const token = await firebaseUser.getIdToken();
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ token })
         });
         
-        firebaseUser.getIdToken().then(token => {
-          localStorage.setItem('firebaseToken', token);
-        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setUser({
+              id: data.data.uid,
+              email: data.data.email,
+              name: data.data.name,
+              role: data.data.role,
+            });
+            localStorage.setItem('firebaseToken', token);
+            return true;
+          }
+        }
+      } catch (backendError) {
+        console.warn('Backend not available, using fallback:', backendError.message);
+      }
+      
+      // Fallback: Use Firebase data directly
+      const role = firebaseUser.email === 'admin@luxe.com' ? 'admin' : 'user';
+      const name = firebaseUser.displayName || firebaseUser.email.split('@')[0];
+      
+      setUser({
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: name,
+        role: role,
+      });
+      
+      // Still store token for future API calls
+      localStorage.setItem('firebaseToken', token);
+      return true;
+      
+    } catch (error) {
+      console.error('Failed to load user:', error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const success = await loadUserWithFallback(firebaseUser);
+        if (!success) {
+          console.error('Failed to load user');
+          setUser(null);
+        }
       } else {
         setUser(null);
         localStorage.removeItem('firebaseToken');
@@ -51,7 +101,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const cleanedEmail = email.trim().toLowerCase();
       const cred = await signInWithEmailAndPassword(auth, cleanedEmail, password);
-      return { success: true, user: cred.user };
+      const firebaseUser = cred.user;
+      
+      const success = await loadUserWithFallback(firebaseUser);
+      if (!success) {
+        await signOut(auth);
+        return { success: false, error: 'Authentication failed' };
+      }
+      
+      return { success: true, user: firebaseUser };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: error.message || 'Unable to sign in' };
@@ -62,7 +120,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const provider = new GoogleAuthProvider();
       const cred = await signInWithPopup(auth, provider);
-      return { success: true, user: cred.user };
+      const firebaseUser = cred.user;
+      
+      const success = await loadUserWithFallback(firebaseUser);
+      if (!success) {
+        await signOut(auth);
+        return { success: false, error: 'Google authentication failed' };
+      }
+      
+      return { success: true, user: firebaseUser };
     } catch (error) {
       console.error('Google login error:', error);
       return { success: false, error: error.message || 'Unable to sign in with Google' };
@@ -70,6 +136,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (name, email, password, confirmPassword) => {
+    console.log('AuthContext signup:', { name, email, password: '***', confirmPassword });
     const cleanedName = name.trim();
     const cleanedEmail = email.trim().toLowerCase();
 
@@ -97,8 +164,16 @@ export const AuthProvider = ({ children }) => {
       const cred = await createUserWithEmailAndPassword(auth, cleanedEmail, password);
       const firebaseUser = cred.user;
 
+      // Set displayName in Firebase
       if (cleanedName) {
         await updateProfile(firebaseUser, { displayName: cleanedName });
+      }
+
+      // Load user data (with fallback)
+      const success = await loadUserWithFallback(firebaseUser);
+      if (!success) {
+        await signOut(auth);
+        return { success: false, error: 'Account creation failed' };
       }
 
       return { success: true, user: firebaseUser };
@@ -122,15 +197,20 @@ export const AuthProvider = ({ children }) => {
   const refreshSession = async () => {
     const firebaseUser = auth.currentUser;
     if (firebaseUser) {
-      const token = await firebaseUser.getIdToken();
-      localStorage.setItem('firebaseToken', token);
-      return true;
+      const success = await loadUserWithFallback(firebaseUser);
+      if (success) {
+        return true;
+      } else {
+        await signOut(auth);
+        setUser(null);
+        localStorage.removeItem('firebaseToken');
+      }
     }
     return false;
   };
 
   const isAdmin = () => {
-    return user?.role === 'admin' || user?.email === 'admin@luxe.com';
+    return user?.role === 'admin';
   };
 
   const isAuthenticated = () => {
@@ -155,5 +235,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export default AuthContext;

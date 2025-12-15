@@ -20,8 +20,7 @@
     "dev": "vite",
     "build": "vite build",
     "start": "node server.js",
-    "preview": "vite preview",
-    "postinstall": "chmod +x node_modules/.bin/vite"
+    "preview": "vite preview"
   },
   "eslintConfig": {
     "extends": [

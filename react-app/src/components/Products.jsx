@@ -1,8 +1,6 @@
-import React from 'react';
+import React, { memo, useState, useMemo } from 'react';
 import ProductCard from './ProductCard';
 import Skeleton from './Skeleton';
-
-import { useState, useMemo, useEffect } from 'react';
 
 const Products = ({
   products,
@@ -128,4 +126,4 @@ const Products = ({
   );
 };
 
-export default Products;
+export default memo(Products);

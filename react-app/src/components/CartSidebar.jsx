@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatPrice } from '../utils/helpers';
 
-const CartSidebar = ({ isOpen, cart, onClose, onUpdateQuantity, onRemove, onContinueShopping }) => {
+const CartSidebar = ({ isOpen, cart, onClose, onUpdateQuantity, onRemove, onContinueShopping, onCheckout, onClearCart }) => {
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
@@ -137,7 +137,14 @@ const CartSidebar = ({ isOpen, cart, onClose, onUpdateQuantity, onRemove, onCont
             <span className="cart-total-price">{formatPrice(total)}</span>
           </div>
           <div className="cart-actions">
-            <button className="btn" style={{ width: '100%' }}>
+            <button 
+              className="btn btn-danger" 
+              style={{ width: '100%', marginBottom: '0.5rem', backgroundColor: '#dc3545' }} 
+              onClick={onClearCart}
+            >
+              <span className="btn-text">Remove All Cart</span>
+            </button>
+            <button className="btn" style={{ width: '100%' }} onClick={onCheckout}>
               <span className="btn-text">Checkout</span>
             </button>
           </div>

@@ -8,7 +8,7 @@ export const productsData = [
     rating: 4.9,
     reviews: 127,
     description: "Handcrafted in Milan with premium Italian leather and solid oak frame. Features hand-stitched seams, brass accents, and ergonomic design for ultimate comfort.",
-    images: ["https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"],
+    images: ["https://jsmskqsmsptrnjilvkrj.supabase.co/storage/v1/object/public/product-images/modern-sofa.jpg"],
     featured: true,
     inStock: true
   },

@@ -9,6 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -24,19 +25,45 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
+  // Verify token with backend and get user data
+  const verifyTokenWithBackend = async (token) => {
+    try {
+      const response = await api.auth.verifyToken(token);
+      if (response.success) {
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      return null;
+    }
+  };
+
+  // Load user data from backend
+  const loadUserWithBackend = async (firebaseUser) => {
+    try {
+      const token = await firebaseUser.getIdToken();
+      const backendUser = await verifyTokenWithBackend(token);
+      
+      if (backendUser) {
         setUser({
-          id: firebaseUser.uid,
-          email: firebaseUser.email,
-          name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-          role: firebaseUser.email === 'admin@luxe.com' ? 'admin' : 'user',
+          id: backendUser.uid,
+          email: backendUser.email,
+          name: backendUser.name,
+          role: backendUser.role,
         });
-        
-        firebaseUser.getIdToken().then(token => {
-          localStorage.setItem('firebaseToken', token);
-        });
+        // Store token for API calls
+        localStorage.setItem('firebaseToken', token);
+      }
+    } catch (error) {
+      console.error('Failed to load user from backend:', error);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        await loadUserWithBackend(firebaseUser);
       } else {
         setUser(null);
         localStorage.removeItem('firebaseToken');
@@ -51,9 +78,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const cleanedEmail = email.trim().toLowerCase();
       const cred = await signInWithEmailAndPassword(auth, cleanedEmail, password);
-      return { success: true, user: cred.user };
+      const firebaseUser = cred.user;
+      await loadUserWithBackend(firebaseUser);
+      return { success: true, user: firebaseUser };
     } catch (error) {
-      console.error('Login error:', error);
       return { success: false, error: error.message || 'Unable to sign in' };
     }
   };
@@ -62,9 +90,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const provider = new GoogleAuthProvider();
       const cred = await signInWithPopup(auth, provider);
-      return { success: true, user: cred.user };
+      const firebaseUser = cred.user;
+      await loadUserWithBackend(firebaseUser);
+      return { success: true, user: firebaseUser };
     } catch (error) {
-      console.error('Google login error:', error);
       return { success: false, error: error.message || 'Unable to sign in with Google' };
     }
   };
@@ -97,40 +126,39 @@ export const AuthProvider = ({ children }) => {
       const cred = await createUserWithEmailAndPassword(auth, cleanedEmail, password);
       const firebaseUser = cred.user;
 
+      // Set displayName in Firebase
       if (cleanedName) {
         await updateProfile(firebaseUser, { displayName: cleanedName });
       }
 
+      // Load user data from backend (creates profile automatically)
+      await loadUserWithBackend(firebaseUser);
+
       return { success: true, user: firebaseUser };
     } catch (error) {
-      console.error('Signup error:', error);
       return { success: false, error: error.message || 'Unable to create account' };
     }
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      localStorage.removeItem('firebaseToken');
-      console.log('User logged out successfully');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+    await signOut(auth);
+    setUser(null);
+    localStorage.removeItem('firebaseToken');
   };
 
   const refreshSession = async () => {
     const firebaseUser = auth.currentUser;
     if (firebaseUser) {
-      const token = await firebaseUser.getIdToken();
-      localStorage.setItem('firebaseToken', token);
+      await loadUserWithBackend(firebaseUser);
       return true;
     }
+    setUser(null);
+    localStorage.removeItem('firebaseToken');
     return false;
   };
 
   const isAdmin = () => {
-    return user?.role === 'admin' || user?.email === 'admin@luxe.com';
+    return user?.role === 'admin';
   };
 
   const isAuthenticated = () => {
@@ -155,5 +183,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export default AuthContext;

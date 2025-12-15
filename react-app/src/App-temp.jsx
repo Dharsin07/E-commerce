@@ -1,5 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom';
+import { getProducts } from './lib/supabase';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
@@ -9,9 +10,9 @@ import FlyToIcon from './components/FlyToIcon';
 import { useTheme } from './context/ThemeContext';
 import { useAuth } from './context/AuthContext';
 import { scrollToSection } from './utils/helpers';
+import { productsData } from './data/productsData';
 import { useOptimisticCart } from './hooks/useOptimisticCart';
 import { useDataPreloader } from './hooks/useDataPreloader';
-import { productsAPI } from './services/api';
 import { supabase, 
   getCartItems, 
   addToCart as addToCartDB, 
@@ -26,6 +27,7 @@ import { supabase,
   getUserPreference,
   setUserPreference
 } from './lib/supabase';
+import { createProduct, updateProduct, deleteProduct } from './lib/productCrud';
 import { useSearch } from './hooks/useSearch';
 
 // Lazy load components for code splitting
@@ -64,7 +66,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDarkMode } = useTheme();
-  const { user, isAuthenticated, isAdmin } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   // Loading state for full-page animation
   const [isLoading, setIsLoading] = useState(true);
@@ -97,17 +99,6 @@ function App() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewingProduct, setReviewingProduct] = useState(null);
   const [dataLoading, setDataLoading] = useState(false);
-
-  const fetchProducts = async () => {
-    try {
-      const res = await productsAPI.getProducts();
-      setProducts(Array.isArray(res?.data) ? res.data : []);
-    } catch (e) {
-      console.error('Failed to load products from backend:', e);
-      setProducts([]);
-      toast.error('Failed to load products');
-    }
-  };
 
   // Sync preloaded data with state
   useEffect(() => {
@@ -148,9 +139,9 @@ function App() {
     }
   }, []);
 
-  // Load products from backend (single source of truth)
+  // Load products from productsData.js
   useEffect(() => {
-    fetchProducts();
+    setProducts(productsData);
   }, []);
 
   // Handle body overflow
@@ -288,43 +279,6 @@ function App() {
   };
 
   // Wishlist functions
-  const toggleWishlist = async (productId) => {
-  if (!user) {
-    toast.error("Please login to manage wishlist");
-    return;
-  }
-  
-  const userId = user.uid || user.id;
-  if (!userId) return;
-  
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-  
-  try {
-    await toggleWishlistDB(userId, productId);
-    
-    // Update local state
-    setWishlist(prevWishlist => {
-      const existingIndex = prevWishlist.findIndex(item => item.id === productId);
-      if (existingIndex > -1) {
-        toast.info(`💔 ${product.name} removed from wishlist`);
-        return prevWishlist.filter(item => item.id !== productId);
-      } else {
-        toast.success(`❤️ ${product.name} added to wishlist!`);
-        return [...prevWishlist, {
-          id: productId,
-          name: product.name,
-          price: product.price,
-          image: product.images[0]
-        }];
-      }
-    });
-  } catch (error) {
-    console.error('Error toggling wishlist:', error);
-    toast.error("Failed to update wishlist");
-  }
-};
-
   const removeFromWishlist = (productId) => {
     setWishlist(prev => prev.filter(item => item.id !== productId));
   };
@@ -477,37 +431,16 @@ function App() {
   };
 
   // Admin functions
-  const handleAddProduct = async (product) => {
-    try {
-      await productsAPI.createProduct(product);
-      await fetchProducts();
-      toast.success('Product added successfully!');
-    } catch (e) {
-      console.error('Failed to create product:', e);
-      toast.error(e?.message || 'Failed to create product');
-    }
+  const handleAddProduct = (product) => {
+    setProducts(prev => [...prev, product]);
   };
 
-  const handleUpdateProduct = async (productId, updates) => {
-    try {
-      await productsAPI.updateProduct(productId, updates);
-      await fetchProducts();
-      toast.success('Product updated successfully!');
-    } catch (e) {
-      console.error('Failed to update product:', e);
-      toast.error(e?.message || 'Failed to update product');
-    }
+  const handleUpdateProduct = (productId, updates) => {
+    setProducts(prev => prev.map(p => p.id === productId ? { ...p, ...updates } : p));
   };
 
-  const handleDeleteProduct = async (productId) => {
-    try {
-      await productsAPI.deleteProduct(productId);
-      await fetchProducts();
-      toast.info('Product deleted');
-    } catch (e) {
-      console.error('Failed to delete product:', e);
-      toast.error(e?.message || 'Failed to delete product');
-    }
+  const handleDeleteProduct = (productId) => {
+    setProducts(prev => prev.filter(p => p.id !== productId));
   };
 
   // Review functions are handled by handleSubmitReview which persists to localStorage
@@ -696,8 +629,8 @@ function App() {
         onSubmit={(review) => handleSubmitReview(reviewingProduct.id, review)}
       />
 
-      {/* Admin Panel - admin only */}
-      {isAuthenticated() && isAdmin() && (
+      {/* Admin Panel - show for all authenticated users */}
+      {isAuthenticated() && (
         <AdminPanel
           isOpen={isAdminOpen}
           onClose={() => setIsAdminOpen(false)}

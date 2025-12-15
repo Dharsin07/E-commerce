@@ -1,6 +1,8 @@
-﻿import React, { useRef } from 'react';
+﻿import React, { useRef, memo } from 'react';
+import { handleImageError, getSupabaseImageUrl } from '../utils/imageUtils';
 import { formatPrice, generateStars } from '../utils/helpers';
 import Skeleton from './Skeleton';
+import LazyImage from './LazyImage';
 
 const ProductCard = ({ product, isInWishlist, onAddToCart, onToggleWishlist, onOpenModal, onFly, loading = false }) => {
   const discountPercent = product?.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
@@ -31,13 +33,11 @@ const ProductCard = ({ product, isInWishlist, onAddToCart, onToggleWishlist, onO
   return (
     <div className="product-card fade-in">
       <div className="product-image" onClick={() => onOpenModal(product.id)}>
-        <img
-          ref={imgRef}
+        <LazyImage
           src={product.images[0]}
           alt={product.name}
           className="product-img"
-          loading="lazy"
-          decoding="async"
+          ref={imgRef}
         />
 
         {discountPercent > 0 && (
@@ -76,6 +76,11 @@ const ProductCard = ({ product, isInWishlist, onAddToCart, onToggleWishlist, onO
             aria-label="Add to cart"
             title="Add to cart"
           >
+            <LazyImage 
+              src={product.images[0]}
+              alt={product.name}
+              className="product-img"
+            />
             <span className="action-icon" aria-hidden>🛒</span>
             <span className="sr-only">Add to cart</span>
           </button>
@@ -113,4 +118,4 @@ const ProductCard = ({ product, isInWishlist, onAddToCart, onToggleWishlist, onO
   );
 };
 
-export default ProductCard;
+export default memo(ProductCard);

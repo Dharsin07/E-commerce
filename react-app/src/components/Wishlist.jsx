@@ -17,12 +17,13 @@ const Wishlist = ({ isOpen, wishlist, onClose, onRemove, onAddToCart, onMoveAllT
   };
 
   const handleMoveAllToCart = () => {
+    const itemCount = wishlist.length;
     wishlist.forEach(item => {
       try { const img = document.querySelector(`img[src*="${item.image}"]`) || document.querySelector('.wishlist-item img'); const rect = img?.getBoundingClientRect(); typeof onFly === 'function' && onFly({ src: item.image, startRect: rect, target: 'cart' }); } catch (err) {}
-      onAddToCart(item.id);
+      onAddToCart(item.id, 1, false); // Pass false to suppress individual notifications
     });
-  onMoveAllToCart();
-  toast.success('All items moved to cart!');
+    onMoveAllToCart();
+    toast.success(`${itemCount} ${itemCount === 1 ? 'item' : 'items'} moved to cart successfully!`);
   };
 
   return (
