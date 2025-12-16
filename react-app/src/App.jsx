@@ -11,8 +11,11 @@ import { useAuth } from './context/AuthContext';
 import { scrollToSection } from './utils/helpers';
 import { useOptimisticCart } from './hooks/useOptimisticCart';
 import { useDataPreloader } from './hooks/useDataPreloader';
-import { productsAPI } from './services/api';
 import { supabase, 
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
   getCartItems, 
   addToCart as addToCartDB, 
   updateCartItemQuantity as updateCartItemQuantityDB,
@@ -101,10 +104,10 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const res = await productsAPI.getProducts();
-      setProducts(Array.isArray(res?.data) ? res.data : []);
+      const data = await getProducts();
+      setProducts(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.error('Failed to load products from backend:', e);
+      console.error('Failed to load products from Supabase:', e);
       setProducts([]);
       toast.error('Failed to load products');
     }
@@ -136,17 +139,16 @@ function App() {
   // Initialize animations on mount
   useEffect(() => {
     initializeAnimations();
-    
-    // Register service worker for caching
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('Service Worker registered:', registration);
-        })
-        .catch(error => {
-          console.log('Service Worker registration failed:', error);
-        });
-    }
+    // Temporarily commenting out service worker to fix cache error
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('/sw.js')
+    //     .then(registration => {
+    //       console.log('Service Worker registered:', registration);
+    //     })
+    //     .catch(error => {
+    //       console.log('Service Worker registration failed:', error);
+    //     });
+    // }
   }, []);
 
   // Load products from backend (single source of truth)
@@ -480,7 +482,7 @@ function App() {
   // Admin functions
   const handleAddProduct = async (product) => {
     try {
-      await productsAPI.createProduct(product);
+      await createProduct(product);
       await fetchProducts();
       toast.success('Product added successfully!');
     } catch (e) {
@@ -491,7 +493,7 @@ function App() {
 
   const handleUpdateProduct = async (productId, updates) => {
     try {
-      await productsAPI.updateProduct(productId, updates);
+      await updateProduct(productId, updates);
       await fetchProducts();
       toast.success('Product updated successfully!');
     } catch (e) {
@@ -502,7 +504,7 @@ function App() {
 
   const handleDeleteProduct = async (productId) => {
     try {
-      await productsAPI.deleteProduct(productId);
+      await deleteProduct(productId);
       await fetchProducts();
       toast.info('Product deleted');
     } catch (e) {
@@ -585,7 +587,7 @@ function App() {
                 <Link to="/" className="btn btn-secondary">Back to Home</Link>
               </div>
               <div className="collections-grid">
-                {Array.from(new Set(products.map(p => p.category))).map(category => {
+                {Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(category => {
                   const collectionImage = products.find(p => p.category === category)?.images[0];
                   return (
                     <Link key={category} to={`/collection/${category}`} className="collection-card">

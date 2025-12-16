@@ -90,20 +90,6 @@ export const deleteProfile = async (uid) => {
 // =====================================================
 // PRODUCT FUNCTIONS
 // =====================================================
-export const getProducts = async () => {
-  const { data, error } = await supabase
-    .from('products')
-    .select(`
-      *,
-      categories:category_id (
-        name,
-        slug
-      )
-    `);
-  if (error) throw error;
-  return data;
-};
-
 export const createProduct = async (productData) => {
   const { data, error } = await supabase
     .from('products')
@@ -143,6 +129,20 @@ export const deleteProduct = async (id) => {
     .delete()
     .eq('id', id);
   if (error) throw error;
+};
+
+export const getProducts = async () => {
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      *,
+      categories:category_id (
+        name,
+        slug
+      )
+    `);
+  if (error) throw error;
+  return data;
 };
 
 // =====================================================

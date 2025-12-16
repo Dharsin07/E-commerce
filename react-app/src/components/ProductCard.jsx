@@ -88,7 +88,7 @@ const ProductCard = ({ product, isInWishlist, onAddToCart, onToggleWishlist, onO
       </div>
 
       <div className="product-info">
-        <div className="product-category">{product.category.replace('-', ' ')}</div>
+        <div className="product-category">{product.category?.replace('-', ' ') || 'Uncategorized'}</div>
         <h3 className="product-name">{product.name}</h3>
 
         <div className="product-rating">
