@@ -11,11 +11,8 @@ import { useAuth } from './context/AuthContext';
 import { scrollToSection } from './utils/helpers';
 import { useOptimisticCart } from './hooks/useOptimisticCart';
 import { useDataPreloader } from './hooks/useDataPreloader';
+import { productsAPI } from './services/api';
 import { supabase, 
-  getProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
   getCartItems, 
   addToCart as addToCartDB, 
   updateCartItemQuantity as updateCartItemQuantityDB,
@@ -104,10 +101,10 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const data = await getProducts();
-      setProducts(Array.isArray(data) ? data : []);
+      const res = await productsAPI.getProducts();
+      setProducts(Array.isArray(res?.data) ? res.data : []);
     } catch (e) {
-      console.error('Failed to load products from Supabase:', e);
+      console.error('Failed to load products from backend:', e);
       setProducts([]);
       toast.error('Failed to load products');
     }
@@ -480,21 +477,44 @@ function App() {
     toast.success('Order placed successfully!');
   };
 
-// Admin functions
-const handleAddProduct = async (product) => {
-  try {
-    await createProduct(product);
-    await fetchProducts();
-    toast.success('Product added successfully!');
-  } catch (e) {
-    console.error('Failed to create product:', e);
-    toast.error(e?.message || 'Failed to create product');
-  }
-};
+  // Admin functions
+  const handleAddProduct = async (product) => {
+    try {
+      await productsAPI.createProduct(product);
+      await fetchProducts();
+      toast.success('Product added successfully!');
+    } catch (e) {
+      console.error('Failed to create product:', e);
+      toast.error(e?.message || 'Failed to create product');
+    }
+  };
+
+  const handleUpdateProduct = async (productId, updates) => {
+    try {
+      await productsAPI.updateProduct(productId, updates);
+      await fetchProducts();
+      toast.success('Product updated successfully!');
+    } catch (e) {
+      console.error('Failed to update product:', e);
+      toast.error(e?.message || 'Failed to update product');
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    try {
+      await productsAPI.deleteProduct(productId);
+      await fetchProducts();
+      toast.info('Product deleted');
+    } catch (e) {
+      console.error('Failed to delete product:', e);
+      toast.error(e?.message || 'Failed to delete product');
+    }
+  };
+
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const wishlistCount = wishlist.length;
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
