@@ -81,9 +81,6 @@ function App() {
     setFlyItems(prev => [...prev, { id, src, startRect, selector }]);
   };
 
-  // Use data preloader for efficient backend data loading
-  const { cart: preloadedCart, wishlist: preloadedWishlist, reviewsByProduct: preloadedReviews, isLoading: dataPreloading } = useDataPreloader(user);
-
   // State Management
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -98,6 +95,9 @@ function App() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewingProduct, setReviewingProduct] = useState(null);
   const [dataLoading, setDataLoading] = useState(false);
+
+  // Use data preloader for efficient backend data loading
+  const { cart: preloadedCart, wishlist: preloadedWishlist, reviewsByProduct: preloadedReviews, isLoading: dataPreloading } = useDataPreloader(user, products);
 
   const fetchProducts = async () => {
     try {
@@ -616,7 +616,7 @@ function App() {
           } />
           <Route path="/shop" element={<Shop products={products} wishlist={wishlist} onAddToCart={addToCart} onToggleWishlist={toggleWishlist} onOpenModal={openProductModal} reviewsByProduct={reviewsByProduct} onFly={handleFly} />} />
 
-          <Route path="/review" element={<ReviewPage />} />
+          <Route path="/review" element={<ReviewPage products={products} />} />
 
           {/* Authentication routes */}
           <Route path="/login" element={<Login />} />

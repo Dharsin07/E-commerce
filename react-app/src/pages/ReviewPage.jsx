@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { productsData } from '../data/productsData';
 
 const STORAGE_KEY = 'product_reviews';
 
-const ReviewPage = () => {
-  const [productId, setProductId] = useState(String(productsData[0]?.id || ''));
+const ReviewPage = ({ products = [] }) => {
+  const [productId, setProductId] = useState(String(products[0]?.id || ''));
   const [name, setName] = useState('');
   const [rating, setRating] = useState(5);
   const [text, setText] = useState('');
@@ -33,8 +32,8 @@ const ReviewPage = () => {
   };
 
   useEffect(() => {
-    if (!productId && productsData[0]) setProductId(String(productsData[0].id));
-  }, [productId]);
+    if (!productId && products[0]) setProductId(String(products[0].id));
+  }, [productId, products]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -68,7 +67,7 @@ const ReviewPage = () => {
           <label>
             Product
             <select value={productId} onChange={e => setProductId(String(e.target.value))} style={{ width: '100%', padding: '8px', marginTop: '0.5rem' }}>
-              {productsData.map(p => (
+              {products.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
@@ -105,7 +104,7 @@ const ReviewPage = () => {
 
           {Object.entries(reviewsMap).map(([pid, arr]) => (
             <div key={pid} style={{ marginTop: '1rem' }}>
-              <h4 style={{ marginBottom: '0.5rem' }}>{productsData.find(p => String(p.id) === String(pid))?.name || 'Product'}</h4>
+              <h4 style={{ marginBottom: '0.5rem' }}>{products.find(p => String(p.id) === String(pid))?.name || 'Product'}</h4>
               {arr.map(r => (
                 <div key={r.id} className="review-card" style={{ marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
