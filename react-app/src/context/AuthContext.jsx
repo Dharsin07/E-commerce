@@ -9,6 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
+import { cartAPI } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -23,6 +24,20 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cart, setCart] = useState([]);
+
+  // Function to fetch cart items
+  const fetchCart = async () => {
+    try {
+      const result = await cartAPI.getCartItems();
+      if (result.success) {
+        setCart(result.data.items);
+        console.log('Cart fetched after login:', result.data.items);
+      }
+    } catch (error) {
+      console.error('Error fetching cart after login:', error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -34,11 +49,14 @@ export const AuthProvider = ({ children }) => {
           role: firebaseUser.email === 'admin@luxe.com' ? 'admin' : 'user',
         });
         
+        // Fetch cart items after successful login
         firebaseUser.getIdToken().then(token => {
           localStorage.setItem('firebaseToken', token);
+          fetchCart();
         });
       } else {
         setUser(null);
+        setCart([]); // Clear cart when logged out
         localStorage.removeItem('firebaseToken');
       }
       setIsLoading(false);
@@ -61,6 +79,17 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
+      
+      // Force account selection and prompt for login
+      provider.setCustomParameters({
+        prompt: 'select_account',
+        access_type: 'offline'
+      });
+      
+      // Add scopes for better user info
+      provider.addScope('email');
+      provider.addScope('profile');
+      
       const cred = await signInWithPopup(auth, provider);
       return { success: true, user: cred.user };
     } catch (error) {
@@ -140,6 +169,8 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading: isLoading,
+    cart,
+    fetchCart,
     login,
     signup,
     logout,

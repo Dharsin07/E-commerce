@@ -7,11 +7,11 @@ const {
   removeFromCart,
   clearCart,
   getCartSummary
-} = require('../controllers/cartController');
-// const { authenticateToken } = require('../middleware/auth'); // Temporarily disabled
+} = require('../controllers/cartController-database'); // Use database version
+const { authenticateToken } = require('../middleware/auth');
 
-// All cart routes require authentication (temporarily disabled)
-// router.use(authenticateToken);
+// All cart routes require authentication
+router.use(authenticateToken);
 
 router.get('/', getCartItems);
 router.get('/summary', getCartSummary);

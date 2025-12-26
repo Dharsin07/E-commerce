@@ -34,6 +34,7 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
     }));
   };
 
+
   const initiateGPayPayment = () => {
     if (!formData.upiId) {
       toast.error('Please enter UPI ID');
@@ -45,12 +46,12 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
     // Open GPay/PhonePe app
     window.location.href = upiUrl;
     
-    // Simulate payment completion after delay
+    // Immediate payment completion
     setTimeout(() => {
       toast.success('Payment completed successfully!');
       onCompleteOrder(formData);
       onClose();
-    }, 3000);
+    }, 500);
   };
 
   const handleSubmit = (e) => {
@@ -62,7 +63,8 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
       if (paymentMethod === 'gpay') {
         initiateGPayPayment();
       } else {
-        // Complete order for other payment methods
+        // Immediate order completion for credit card
+        toast.success('Order placed successfully!');
         onCompleteOrder(formData);
         onClose();
       }
@@ -207,67 +209,8 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
               {step === 2 && (
                 <div className="card card--white">
                   <h3>Payment Information</h3>
-                  <div className="form-group">
-                    <label>Cardholder Name *</label>
-                    <input
-                      type="text"
-                      name="cardName"
-                      value={formData.cardName}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Card Number *</label>
-                    <input
-                      type="text"
-                      name="cardNumber"
-                      value={formData.cardNumber}
-                      onChange={handleInputChange}
-                      placeholder="1234 5678 9012 3456"
-                      maxLength="16"
-                      required
-                    />
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Expiry Date *</label>
-                      <input
-                        type="text"
-                        name="expiryDate"
-                        value={formData.expiryDate}
-                        onChange={handleInputChange}
-                        placeholder="MM/YY"
-                        maxLength="5"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>CVV *</label>
-                      <input
-                        type="text"
-                        name="cvv"
-                        value={formData.cvv}
-                        onChange={handleInputChange}
-                        placeholder="123"
-                        maxLength="3"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="sameAsShipping"
-                        checked={formData.sameAsShipping}
-                        onChange={handleInputChange}
-                      />
-                      Billing address same as shipping
-                    </label>
-                  </div>
                   
-                  {/* GPay Payment Section */}
+                  {/* Payment Method Selection */}
                   <div className="form-group">
                     <label>Payment Method *</label>
                     <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
@@ -294,6 +237,7 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
                     </div>
                   </div>
 
+                  {/* Conditional Payment Fields */}
                   {paymentMethod === 'gpay' && (
                     <div className="form-group">
                       <label>UPI ID *</label>
@@ -363,6 +307,18 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
                       </div>
                     </>
                   )}
+                  
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        name="sameAsShipping"
+                        checked={formData.sameAsShipping}
+                        onChange={handleInputChange}
+                      />
+                      Billing address same as shipping
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -410,6 +366,7 @@ const Checkout = ({ isOpen, cart, cartTotal, onClose, onCompleteOrder }) => {
                   </div>
                 </div>
               )}
+
 
               <div className="checkout-actions">
                 {step > 1 && (

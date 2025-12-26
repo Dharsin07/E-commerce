@@ -53,7 +53,7 @@ export const getProfile = async (uid) => {
 export const getAllProfiles = async () => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, name, email, role, updated_at')
+    .select('id, name, role, updated_at')
     .order('updated_at', { ascending: false });
   if (error) throw error;
   return data;

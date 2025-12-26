@@ -95,9 +95,9 @@ const Header = ({
           <li><NavLink to="/collections">Collections</NavLink></li>
           <li><NavLink to="/review">Reviews</NavLink></li>
           <li><a href="#contact" onClick={handleContactClick}>Contact</a></li>
-          {/* Admin link - show for all authenticated users */}
-          {isAuthenticated() && (
-            <li><button className="nav-link admin-nav-link" onClick={onAdminToggle}>Admin</button></li>
+          {/* Admin link - show only for admin users */}
+          {isAuthenticated() && isAdmin() && (
+            <li><button className="nav-link admin-nav-link" onClick={onAdminToggle}>Admin Panel</button></li>
           )}
         </ul>
 
@@ -213,7 +213,7 @@ const Header = ({
                   <li><Link to="/wishlist" onClick={() => setProfileOpen(false)}>Wishlist</Link></li>
                   <li><Link to="/addresses" onClick={() => setProfileOpen(false)}>Saved Addresses</Link></li>
                   <li><Link to="/payments" onClick={() => setProfileOpen(false)}>Payment Methods</Link></li>
-                  {isAdmin() && <li><Link to="/dashboard" onClick={() => setProfileOpen(false)}>User Dashboard</Link></li>}
+                  {isAdmin() && <li><Link to="/dashboard" onClick={() => setProfileOpen(false)}>Admin Dashboard</Link></li>}
                   <li><hr style={{ margin: '0.5rem 0', border: 'none', borderTop: '1px solid var(--medium-gray)' }} /></li>
                   <li><button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '0.6rem 1rem', cursor: 'pointer', color: 'var(--charcoal)' }}>Logout</button></li>
                 </ul>

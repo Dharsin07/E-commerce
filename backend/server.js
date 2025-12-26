@@ -6,6 +6,8 @@ const compression = require('compression');
 require('dotenv').config();
 
 const productRoutes = require('./src/routes/productRoutes');
+const cartRoutes = require('./src/routes/cart');
+const wishlistRoutes = require('./src/routes/wishlist');
 
 const app = express();
 
@@ -22,13 +24,18 @@ app.use(cors({
       process.env.FRONTEND_URL,
       'http://localhost:3000',
       'http://localhost:5173',
-      /^https:\/\/.*\.onrender\.com$/,
     ].filter(Boolean);
 
+    // Check exact matches
     if (allowedOrigins.includes(origin)) return callback(null, true);
 
+    // Check localhost patterns
     const isLocalViteOrigin = /^http:\/\/localhost:\d{4,5}$/.test(origin);
     if (isLocalViteOrigin) return callback(null, true);
+
+    // Check Render domains
+    const isRenderOrigin = /^https:\/\/.*\.onrender\.com$/.test(origin);
+    if (isRenderOrigin) return callback(null, true);
 
     return callback(new Error(`CORS blocked for origin: ${origin}`));
   },
@@ -62,6 +69,8 @@ app.use('/api/products', (req, res, next) => {
 
 // Routes - Only products for now to test Supabase storage
 app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
