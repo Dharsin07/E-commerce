@@ -4,7 +4,7 @@ services:
     name: luxi-frontend
     env: node
     buildCommand: cd react-app && npm install && npm run build
-    startCommand: cd react-app && npm start
+    startCommand: node react-app/server.js
     routes:
       - type: rewrite
         source: /api/*
