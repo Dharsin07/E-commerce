@@ -77,6 +77,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Luxi E-commerce API',
+    version: '1.0.0',
+    endpoints: {
+      products: '/api/products',
+      cart: '/api/cart',
+      wishlist: '/api/wishlist',
+      health: '/health'
+    }
+  });
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
