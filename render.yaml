@@ -2,9 +2,9 @@ services:
   # Frontend Service (React App)
   - type: web
     name: luxi-frontend
-    env: static
+    env: node
     buildCommand: cd react-app && npm install && npm run build
-    staticPublishPath: react-app/dist
+    startCommand: cd react-app && npm start
     routes:
       - type: rewrite
         source: /api/*
