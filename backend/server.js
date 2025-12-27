@@ -14,8 +14,8 @@ const app = express();
 // Enable compression for all responses
 app.use(compression());
 
-// Security middleware
-app.use(helmet());
+// Security middleware - temporarily disabled for testing
+// app.use(helmet());
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
