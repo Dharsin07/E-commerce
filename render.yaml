@@ -12,6 +12,7 @@ services:
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3B0cm5qaWx2a3JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNTg1MzYsImV4cCI6MjA4MDgzNDUzNn0.SiZNO9-XP-hFM8uiwoqV4iaRNm5ewbhTlSWKG_c_BXM
       - key: VITE_API_URL
         value: https://luxi-backend.onrender.com/api
+    # No startCommand for static sites
 
   # Backend Service
   - type: web
