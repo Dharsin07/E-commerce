@@ -3,8 +3,8 @@ services:
   - type: web
     name: luxi-frontend
     env: static
-    buildCommand: cd react-app && npm ci && npm run build
-    staticPublishPath: react-app/dist
+    buildCommand: npm run build:frontend
+    staticPublishPath: ./react-app/dist
     envVars:
       - key: VITE_SUPABASE_URL
         value: https://jsmskqsmsptrnjilvkrj.supabase.co
