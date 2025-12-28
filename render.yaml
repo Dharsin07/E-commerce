@@ -3,7 +3,7 @@ services:
   - type: web
     name: luxi-frontend
     env: static
-    buildCommand: cd react-app && npm install && npm run build
+    buildCommand: cd react-app && npm ci && npm run build
     staticPublishPath: react-app/dist
     envVars:
       - key: VITE_SUPABASE_URL
