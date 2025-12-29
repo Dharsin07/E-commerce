@@ -1,7 +1,9 @@
 let firebaseAuth = null;
 try {
   firebaseAuth = require('../config/firebase').auth;
+  console.log('Firebase auth loaded successfully');
 } catch (e) {
+  console.log('Firebase auth not available:', e.message);
   firebaseAuth = null;
 }
 
@@ -22,11 +24,27 @@ const decodeJwtPayload = (token) => {
 
 const authenticateToken = async (req, res, next) => {
   try {
+    console.log('Auth middleware called, NODE_ENV:', process.env.NODE_ENV);
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({ error: 'Access token required' });
+    }
+
+    // For development, accept Firebase tokens without verification
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Using development auth mode');
+      const decoded = decodeJwtPayload(token);
+      const emailFromToken = decoded?.email;
+      const uidFromToken = decoded?.user_id || decoded?.sub;
+      
+      req.user = {
+        uid: uidFromToken || 'dev-user',
+        email: emailFromToken || 'dev@example.com',
+        claims: { dev: true, decoded }
+      };
+      return next();
     }
 
     if (firebaseAuth) {
@@ -35,18 +53,6 @@ const authenticateToken = async (req, res, next) => {
         uid: decoded.uid,
         email: decoded.email,
         claims: decoded
-      };
-      return next();
-    }
-
-    if (process.env.NODE_ENV !== 'production') {
-      const decoded = decodeJwtPayload(token);
-      const emailFromToken = decoded?.email;
-      const uidFromToken = decoded?.user_id || decoded?.sub;
-      req.user = {
-        uid: uidFromToken || 'dev-user',
-        email: token === 'dev-admin' ? 'admin@luxe.com' : (emailFromToken || 'dev@example.com'),
-        claims: { dev: true, decoded }
       };
       return next();
     }
