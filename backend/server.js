@@ -107,16 +107,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler - serve React app for non-API routes
-app.get('*', (req, res) => {
-  // Don't serve React app for API routes
-  if (req.path.startsWith('/api/') || req.path === '/health') {
-    return res.status(404).json({ error: 'API route not found' });
-  }
-  // Serve React app for all other routes
-  res.sendFile(path.join(__dirname, '../react-app/dist/index.html'));
-});
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
