@@ -26,6 +26,7 @@ app.use(cors({
       'http://localhost:5173',
       'http://localhost:5175',
       'http://127.0.0.1:64385',
+      'https://e-commerce-m0n5.onrender.com',
     ].filter(Boolean);
 
     // Check exact matches
