@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
+const path = require('path');
 require('dotenv').config();
 
 const productRoutes = require('./src/routes/productRoutes');
@@ -70,7 +71,10 @@ app.use('/api/products', (req, res, next) => {
   next();
 });
 
-// Routes - Only products for now to test Supabase storage
+// Serve static files from React app
+app.use(express.static(path.join(__dirname, '../react-app/dist')));
+
+// API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
@@ -103,9 +107,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler (Express v5 does not support '*' path the same way)
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// 404 handler - serve React app for non-API routes
+app.get('*', (req, res) => {
+  // Don't serve React app for API routes
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  // Serve React app for all other routes
+  res.sendFile(path.join(__dirname, '../react-app/dist/index.html'));
 });
 
 const PORT = process.env.PORT || 5000;

@@ -1,24 +1,11 @@
 services:
-  # Frontend Service (React App)
+  # Single service serving both frontend and backend
   - type: web
-    name: luxi-frontend
-    env: static
-    buildCommand: npm run build:frontend
-    staticPublishPath: ./react-app/dist
-    envVars:
-      - key: VITE_SUPABASE_URL
-        value: https://jsmskqsmsptrnjilvkrj.supabase.co
-      - key: VITE_SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3B0cm5qaWx2a3JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNTg1MzYsImV4cCI6MjA4MDgzNDUzNn0.SiZNO9-XP-hFM8uiwoqV4iaRNm5ewbhTlSWKG_c_BXM
-      - key: VITE_API_URL
-        value: https://e-commerce-m0n5.onrender.com/api
-    # No startCommand for static sites
-
-  # Backend Service
-  - type: web
-    name: luxi-backend
+    name: luxi-fullstack
     env: node
-    buildCommand: cd backend && npm install
+    buildCommand: |
+      npm run build:frontend
+      cd backend && npm install
     startCommand: cd backend && node server.js
     envVars:
       - key: NODE_ENV
@@ -28,10 +15,16 @@ services:
       - key: SUPABASE_URL
         value: https://jsmskqsmsptrnjilvkrj.supabase.co
       - key: SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3B0cm5qaWx2a3JqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNTg1MzYsImV4cCI6MjA4MDgzNDUzNn0.SiZNO9-XP-hFM8uiwoqV4iaRNm5ewbhTlSWKG_c_BXM
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc2NTI1ODUzNiwiZXhwIjoyMDgwODM0NTM2fQ.SiZNO9-XP-hFM8uiwoqV4iaRNm5ewbhTlSWKG_c_BXM
       - key: SUPABASE_SERVICE_ROLE_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3B0cm5qaWx2a3JqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTI1ODUzNiwiZXhwIjoyMDgwODM0NTM2fQ.Byho5ESaWKOl8xxbIDfYnTHXn6n62PR1ljQdGYWVEQw
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoiInNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTI1ODUzNiwiZXhwIjoyMDgwODM0NTM2fQ.Byho5ESaWKOl8xxbIDfYnTHXn6n62PR1ljQdGYWVEQw
       - key: JWT_SECRET
         value: c5869a22bfb3fa290bc64daede1d843d84c5832d4cd825c86ad12628a62a188431df0ecf20b9e96927248f9938fda68594dd5c00438a16c02fe8a6dd5dec7551
+      - key: VITE_SUPABASE_URL
+        value: https://jsmskqsmsptrnjilvkrj.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc2NTI1ODUzNiwiZXhwIjoyMDgwODM0NTM2fQ.SiZNO9-XP-hFM8uiwoqV4iaRNm5ewbhTlSWKG_c_BXM
+      - key: VITE_API_URL
+        value: https://luxi-fullstack.onrender.com/api
       - key: FRONTEND_URL
-        value: https://luxi-frontend.onrender.com
+        value: https://luxi-fullstack.onrender.com
