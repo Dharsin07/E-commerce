@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Products from '../components/Products';
+import './CollectionPage.css';
 
 // CollectionPage: robust filtering that updates when route param or products change.
 const CollectionPage = ({ products = [], wishlist = [], onAddToCart, onToggleWishlist, onOpenModal, onFly }) => {
@@ -16,6 +17,7 @@ const CollectionPage = ({ products = [], wishlist = [], onAddToCart, onToggleWis
   const [visibleCount, setVisibleCount] = useState(12);
   const [sortBy, setSortBy] = useState('featured');
   const [collectionProducts, setCollectionProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // When products or route param changes, compute the collection products immediately.
   useEffect(() => {
@@ -66,17 +68,29 @@ const CollectionPage = ({ products = [], wishlist = [], onAddToCart, onToggleWis
     return list;
   }, [collectionProducts, searchTerm, sortBy]);
 
+  const handleSeeMore = async () => {
+    setIsLoading(true);
+    // Simulate loading delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setVisibleCount(c => Math.min(filtered.length, c + 20));
+    setIsLoading(false);
+  };
+
+  const handleSeeLess = () => {
+    setVisibleCount(12);
+  };
+
   const visibleProducts = filtered.slice(0, visibleCount);
 
   return (
     <section className="section">
       <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <div className="collection-header">
           <h2 className="section-title">{(category || '').replace('-', ' ')}</h2>
           <button className="btn btn-secondary" onClick={() => navigate('/')}>Back Home</button>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+        <div className="collection-filters">
           <input
             aria-label="Search collection"
             placeholder={`Search ${String(category || '').replace('-', ' ')}...`}
@@ -105,12 +119,25 @@ const CollectionPage = ({ products = [], wishlist = [], onAddToCart, onToggleWis
           onFly={onFly}
         />
 
-        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+        <div className="collection-pagination">
           {visibleCount < filtered.length ? (
-            <button className="btn" onClick={() => setVisibleCount(c => Math.min(filtered.length, c + 20))}>See More</button>
+            <button 
+              className="btn" 
+              onClick={handleSeeMore}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner"></span>
+                  Loading...
+                </>
+              ) : (
+                'See More'
+              )}
+            </button>
           ) : (
             filtered.length > 12 && (
-              <button className="btn outline" onClick={() => setVisibleCount(12)}>See Less</button>
+              <button className="btn outline" onClick={handleSeeLess}>See Less</button>
             )
           )}
         </div>

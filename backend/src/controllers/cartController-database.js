@@ -12,9 +12,20 @@ const getCartItems = async (req, res) => {
     const userId = getUserId(req);
     console.log('Getting cart items for user:', userId);
 
+    // Get cart items with product details
     const { data: cartItems, error } = await supabase
       .from('cart_items')
-      .select('*')
+      .select(`
+        *,
+        products:product_id (
+          id,
+          name,
+          price,
+          images,
+          description,
+          category_id
+        )
+      `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -30,14 +41,16 @@ const getCartItems = async (req, res) => {
       });
     }
 
-    // Format the response
+    // Format the response with actual product details
     const formattedItems = (cartItems || []).map(item => ({
       id: item.id,
       productId: item.product_id,
       quantity: item.quantity,
-      price: item.price || 0,
-      name: `Product ${item.product_id}`,
-      image: '/placeholder.jpg',
+      price: item.products?.price || item.price || 99.99,
+      name: item.products?.name || `Product ${item.product_id}`,
+      image: item.products?.images?.[0] || '/placeholder.jpg',
+      description: item.products?.description || '',
+      category: item.products?.category_id || '',
       created_at: item.created_at,
       updated_at: item.updated_at
     }));
@@ -73,6 +86,17 @@ const addToCart = async (req, res) => {
       });
     }
 
+    // Fetch product details first
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('id, name, price, images, description, category_id')
+      .eq('id', productId)
+      .single();
+
+    if (productError || !product) {
+      console.log('Product not found, using fallback data');
+    }
+
     // Check if item already exists in cart
     const { data: existingItem, error: checkError } = await supabase
       .from('cart_items')
@@ -98,14 +122,14 @@ const addToCart = async (req, res) => {
       if (error) throw error;
       result = data;
     } else {
-      // Add new item to cart
+      // Add new item to cart with actual product details
       const { data, error } = await supabase
         .from('cart_items')
         .insert({
           user_id: userId,
           product_id: productId,
           quantity: quantity,
-          price: 99.99, // Default price - in real app this would come from products table
+          price: product?.price || 99.99,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -122,9 +146,9 @@ const addToCart = async (req, res) => {
               id: `temp-${Date.now()}`,
               productId: productId,
               quantity: quantity,
-              name: `Product ${productId}`,
-              price: 99.99,
-              image: '/placeholder.jpg'
+              name: product?.name || `Product ${productId}`,
+              price: product?.price || 99.99,
+              image: product?.image || '/placeholder.jpg'
             },
             message: 'Item added to cart (temporary storage)'
           });
@@ -140,9 +164,11 @@ const addToCart = async (req, res) => {
         id: result.id,
         productId: result.product_id,
         quantity: result.quantity,
-        name: `Product ${result.product_id}`,
-        price: result.price || 99.99,
-        image: '/placeholder.jpg'
+        name: product?.name || `Product ${result.product_id}`,
+        price: product?.price || result.price || 99.99,
+        image: product?.images?.[0] || '/placeholder.jpg',
+        description: product?.description || '',
+        category: product?.category_id || ''
       },
       message: 'Item added to cart successfully'
     });
@@ -192,6 +218,13 @@ const updateCartItemQuantity = async (req, res) => {
 
     console.log('Found cart item, updating with ID:', existingItem.id);
 
+    // Fetch product details for response
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('id, name, price, images, description, category_id')
+      .eq('id', productId)
+      .single();
+
     // Update the cart item using its ID
     const { data, error } = await supabase
       .from('cart_items')
@@ -215,9 +248,11 @@ const updateCartItemQuantity = async (req, res) => {
         id: data.id,
         productId: data.product_id,
         quantity: data.quantity,
-        name: `Product ${data.product_id}`,
-        price: data.price || 99.99,
-        image: '/placeholder.jpg'
+        name: product?.name || `Product ${data.product_id}`,
+        price: product?.price || data.price || 99.99,
+        image: product?.images?.[0] || '/placeholder.jpg',
+        description: product?.description || '',
+        category: product?.category_id || ''
       },
       message: 'Cart item updated successfully'
     });
