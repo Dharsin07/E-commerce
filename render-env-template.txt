@@ -12,9 +12,9 @@ FIREBASE_CLIENT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_ACTUAL_COMPLETE_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
 
 # JWT Secrets
-JWT_SECRET=your-jwt-secret-here
-AUTH_SECRET=your-auth-secret-here
-COOKIE_SECRET=your-cookie-secret-here
+JWT_SECRET=QzsVKhKnLlSC9CYGstfIlZluz+zV852PcPzZ04KzNj7ThaYoyZatBT0M48SVcHHVCy3x9S0U6Xq7fCCRcxIDDQ==
+AUTH_SECRET=69cdf2be20e2484d23bcfe633dca0463a5a01e968d05e63c791a0f5740053f75f93250a0cfbdc31652130ddc3ce00ff1bd736423b282e49b332cdae8645d0362
+COOKIE_SECRET=142fce9fc50131ee429c2f3422533911c08f73ac908292bfb3c0630d2684c30bc0b1f23dee776f6ad058cb285b8a49b470d177b13ad29e8e7256459c770b0e46
 
 # Supabase Configuration
 SUPABASE_URL=https://jsmskqsmsptrnjilvkrj.supabase.co
