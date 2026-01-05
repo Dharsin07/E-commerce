@@ -30,4 +30,3 @@ PORT=5000
 
 # Next.js Configuration (if using Next.js)
 NEXT_PUBLIC_SUPABASE_URL=https://jsmskqsmsptrnjilvkrj.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNzY1MjU4NTM2LCJleHAiOjIwODA4MzQ1MzZ9.Byho5ESaWKOl8xxbIDfYnTHXn6n62PR1ljQdGYWVEQw
