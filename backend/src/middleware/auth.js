@@ -29,7 +29,10 @@ const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ error: 'Access token required' });
+      return res.status(401).json({ 
+        error: 'Access token required',
+        message: 'Please provide a valid authentication token'
+      });
     }
 
     // For development, accept Firebase tokens without verification
@@ -39,6 +42,13 @@ const authenticateToken = async (req, res, next) => {
       const emailFromToken = decoded?.email;
       const uidFromToken = decoded?.user_id || decoded?.sub;
       
+      if (!uidFromToken) {
+        return res.status(401).json({
+          error: 'Invalid token format',
+          message: 'Token does not contain valid user identifier'
+        });
+      }
+      
       req.user = {
         uid: uidFromToken || 'dev-user',
         email: emailFromToken || 'dev@example.com',
@@ -47,20 +57,37 @@ const authenticateToken = async (req, res, next) => {
       return next();
     }
 
+    // Production mode - verify with Firebase
     if (firebaseAuth) {
-      const decoded = await firebaseAuth.verifyIdToken(token);
-      req.user = {
-        uid: decoded.uid,
-        email: decoded.email,
-        claims: decoded
-      };
-      return next();
+      try {
+        const decoded = await firebaseAuth.verifyIdToken(token);
+        req.user = {
+          uid: decoded.uid,
+          email: decoded.email,
+          claims: decoded
+        };
+        return next();
+      } catch (firebaseError) {
+        console.error('Firebase token verification failed:', firebaseError.message);
+        return res.status(403).json({ 
+          error: 'Invalid or expired token',
+          message: 'Your authentication token is invalid or has expired'
+        });
+      }
     }
 
-    return res.status(500).json({ error: 'Auth not configured' });
+    // If we reach here, Firebase is not configured
+    console.error('Authentication system not properly configured');
+    return res.status(500).json({ 
+      error: 'Authentication service unavailable',
+      message: 'The authentication service is not properly configured. Please contact support.'
+    });
   } catch (error) {
-    console.error('Auth error:', error);
-    return res.status(403).json({ error: 'Invalid or expired token' });
+    console.error('Unexpected auth error:', error);
+    return res.status(500).json({ 
+      error: 'Authentication error',
+      message: 'An unexpected error occurred during authentication'
+    });
   }
 };
 

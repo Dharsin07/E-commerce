@@ -1,0 +1,33 @@
+# Database Configuration
+DB_HOST=dpg-d5996hchg00s73c7hh30-a
+DB_PORT=5432
+DB_NAME=luxi_db_evyp
+DB_USER=dharsin
+DB_PASSWORD=c5risP4GsyhzUeTUKD0gtJulLPDLmFlJ
+DATABASE_URL=postgresql://dharsin:c5risP4GsyhzUeTUKD0gtJulLPDLmFlJ@dpg-d5996hchg00s73c7hh30-a/luxi_db_evyp
+
+# Firebase Configuration (REQUIRED for production)
+FIREBASE_PROJECT_ID=your-firebase-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_ACTUAL_COMPLETE_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
+
+# JWT Secrets
+JWT_SECRET=your-jwt-secret-here
+AUTH_SECRET=your-auth-secret-here
+COOKIE_SECRET=your-cookie-secret-here
+
+# Supabase Configuration
+SUPABASE_URL=https://jsmskqsmsptrnjilvkrj.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoImFub24iLCJpYXQiOjE3NjUyNTg1MzYsImV4cCI6MjA4MDgzNDUzNn0.SiZNO9-XP-hFM8uiwoqV4iaRNm5ewbhTlSWKG_c_BXM
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNzY1MjU4NTM2LCJleHAiOjIwODA4MzQ1MzZ9.Byho5ESaWKOl8xxbIDfYnTHXn6n62PR1ljQdGYWVEQw
+
+# Frontend Configuration
+FRONTEND_URL=https://your-app-name.onrender.com
+
+# Server Configuration
+NODE_ENV=production
+PORT=5000
+
+# Next.js Configuration (if using Next.js)
+NEXT_PUBLIC_SUPABASE_URL=https://jsmskqsmsptrnjilvkrj.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNzY1MjU4NTM2LCJleHAiOjIwODA4MzQ1MzZ9.Byho5ESaWKOl8xxbIDfYnTHXn6n62PR1ljQdGYWVEQw
