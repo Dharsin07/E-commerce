@@ -7,9 +7,9 @@ DB_PASSWORD=c5risP4GsyhzUeTUKD0gtJulLPDLmFlJ
 DATABASE_URL=postgresql://dharsin:c5risP4GsyhzUeTUKD0gtJulLPDLmFlJ@dpg-d5996hchg00s73c7hh30-a/luxi_db_evyp
 
 # Firebase Configuration (REQUIRED for production)
-FIREBASE_PROJECT_ID=your-firebase-project-id
-FIREBASE_CLIENT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_ACTUAL_COMPLETE_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
+FIREBASE_PROJECT_ID=luxzant
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@luxzant.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIiEugIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC2vWlZB1WIq3CCXudLYEmhJyvWsUY/oJ5s1cAhC7sPn+fOXGET6dPH1OrKwH8S4A7S\nnPAGzTW7NX7rgk3sYsDZUUaI162khsi+6fotthe1PfrD0sbbdF7B19zI+kfBdPXHPO/n5/DYnM5+sgVEI/GVsJ8OX17M26YSZsKGQjW7xy9vfJef/vsZnGj9Q\nr2DVYgko1+i\nm0IICQf4obOrDE/+1KMFDBHqnW+dV\neQ0L4/kaTkMBZPN4OXO3IULoVaxnN\nzIcsAFDvjTAvPe7tagZcZoeDSEw6W\nrONMZK/w6ZbYeO0R1vQGFtsq51QX\nvgo9keyIfhCEMRc+/urW68K0JUsEh\nbclLhwGLTOk4tC5Pe8ZXZXI+WzG/N8N\nb05w9wM+wdwJ/GWNSA4IBfLBWSVSMQXeTepr\nnRuaTOAUUeOVKTDBn80QDQd3BxzeOYdVvdDE+Bw9il+ktCXiaGGot4C/QKBggJJubiY/nvPsV5gLZgDnMi6Tqw2kte5FVTRn1+z+PkLxy3yW\nf1IUF6Z0hgG330VeOSbuBXMr1gawPDRmaH/n7sIUJiteCZ7CT9B8IWELe5UVNNTNvQL247BC3/ntM91sdZxxpTNVvvVRVgesWxW0c8XWjD9XN1shv4S9TB\nRzBHe/hgxljcdDKWQDuoTF\nnyM/Rogjn7kxtka+74IW=\n-----END PRIVATE KEY-----\n"
 
 # JWT Secrets
 JWT_SECRET=QzsVKhKnLlSC9CYGstfIlZluz+zV852PcPzZ04KzNj7ThaYoyZatBT0M48SVcHHVCy3x9S0U6Xq7fCCRcxIDDQ==
@@ -22,7 +22,7 @@ SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzbXNrcXNtc3RybmppbHZrcmoiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNzY1MjU4NTM2LCJleHAiOjIwODA4MzQ1MzZ9.Byho5ESaWKOl8xxbIDfYnTHXn6n62PR1ljQdGYWVEQw
 
 # Frontend Configuration
-FRONTEND_URL=https://your-app-name.onrender.com
+FRONTEND_URL=https://e-commerce-r0n5.onrender.com
 
 # Server Configuration
 NODE_ENV=production
